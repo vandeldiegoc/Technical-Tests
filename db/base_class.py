@@ -4,10 +4,12 @@ from sqlalchemy.ext.declarative import as_declarative, declared_attr
 
 class_registry: Dict = {}
 
+# mapping object tables to use from conection session 
 @as_declarative(class_registry= class_registry)
 class Base:
     id: Any
     __name__: str
+
 
     @declared_attr
     def __tablename__(cls) -> str:
