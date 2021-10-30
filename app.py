@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Body, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from db.deps import get_dep
 from component.crud import crud
@@ -12,8 +13,9 @@ app = FastAPI()
 def add_dog(
     data:DogCreate, db:Session = Depends(get_dep)
     ):
-    dogpost = crud.create(db, jsonable_encoder(data))
-    return dogpost
+    data = jsonable_encoder(data)
+    dogpost = crud.create(db, data)
+    return JSONResponse(data)
 
 
 

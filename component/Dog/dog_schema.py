@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 
 class DogCreate(BaseModel):
-    id: int
     name: str
     picture: str
     is_adopted: bool = False

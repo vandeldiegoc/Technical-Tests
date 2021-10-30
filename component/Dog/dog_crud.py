@@ -23,10 +23,10 @@ class crudDog(Generic[modelType, createSchemaType, updateSchemaType]):
             db.add(db_obj)
             db.commit()
             return(db_obj)
-        except IntegrityError:
+        except IntegrityError as e:
             db.rollback()
             raise HTTPException(status_code=405, 
-                                detail='error to try insert new data in table dog')
+                                detail='invali parameter or duplicate key value')
         
 
 
