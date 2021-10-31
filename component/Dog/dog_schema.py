@@ -9,7 +9,8 @@ class DogCreate(BaseModel):
     create_date: datetime
 
 
-class dogUpdate(BaseModel):
+class DogResponse(BaseModel):
+    id: int
     name: str
     picture: str
     is_adopted: bool

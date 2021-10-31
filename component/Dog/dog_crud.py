@@ -2,6 +2,7 @@
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
+from component.Dog.dog_model import Dog
 
 from db.base_class import Base
 from typing import TypeVar, Type, Generic
@@ -27,6 +28,16 @@ class crudDog(Generic[modelType, createSchemaType, updateSchemaType]):
             db.rollback()
             raise HTTPException(status_code=405, 
                                 detail='invali parameter or duplicate key value')
+
+    def getDog(self, db:session, name: str):
+        try:
+            dog = db.query(self.model).filter(self.model.name == name).one()
+
+        except NoResultFound:
+            raise HTTPException(status_code=406,
+                                detail="no record was found in the databases")
+        return dog
+    
         
 
 

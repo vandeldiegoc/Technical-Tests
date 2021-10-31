@@ -12,5 +12,3 @@ class Dog(Base):
     picture = Column(String(), nullable=False, unique=True)
     is_adopted = Column(Boolean, default=False)
     create_date = Column(DateTime, default=datetime.utcnow())
-
-
