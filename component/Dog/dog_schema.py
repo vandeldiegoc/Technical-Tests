@@ -1,12 +1,13 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
+from typing import Optional
 
 
 class DogCreate(BaseModel):
-    name: str
+    name: StrictStr
     picture: str
     is_adopted: bool = False
-    create_date: datetime
+    create_date: datetime = datetime.utcnow()
 
 
 class DogResponse(BaseModel):
@@ -15,3 +16,7 @@ class DogResponse(BaseModel):
     picture: str
     is_adopted: bool
     datetime: str 
+
+class DogUpdate(BaseModel):
+    name: Optional[str]
+    is_adopted: Optional[bool]
