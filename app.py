@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
+from requests import sessions
 from sqlalchemy.orm import Session
 from db.deps import get_dep
 from component.crud import crud
@@ -57,6 +58,13 @@ def get_all_dog(
     dogs = crud.getDogs(db)
     return jsonable_encoder(dogs)
 
+@app.get("/api/dogs/is_adopted", status_code=200)
+def get_all_dog_adopted(
+    db:Session = Depends(get_dep)
+    ):
+    dogs = crud.getDogsAdopted(db)
+    return dogs
+
 @app.get('/api/dog/{name}', status_code=200)
 def get_dog(
     name: str, db:Session = Depends(get_dep)
@@ -77,7 +85,12 @@ def update_dog(
 
     return JSONResponse({"Done": "Done"})
 
-    
+@app.delete("/api/dogs/{name}", status_code=200)
+def delete_dog(
+    name:str, db:Session = Depends(get_dep)
+    ):
+    crud.deleteDog(db, name)
+    return JSONResponse({"Done": "Done"})
 
 
 

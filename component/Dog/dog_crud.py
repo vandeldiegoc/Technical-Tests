@@ -43,19 +43,30 @@ class crudDog(Generic[modelType, createSchemaType, updateSchemaType]):
         return dogs
 
     def updateDog(self, db:session, name:str, data:updateSchemaType):
-
         data = data.dict(exclude_unset=True)
         try:
-            dog = db.query(self.model).filter(self.model.name == name).\
+            db.query(self.model).filter(self.model.name == name).\
             update(data)
             db.commit()
-            return dog
         except IntegrityError:
             db.rollback()
             raise HTTPException(status_code=405, 
                                 detail="error to try update dog for parameter")
+
+    def deleteDog(self, db:session, name:str):
+        try:
+            db.query(self.model).filter(self.model.name == name).\
+            delete()
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=405, 
+                                detail="error to try delete dog")
         
 
+    def getDogsAdopted(self, db:session):
+        dogs = db.query(self.model).filter(self.model.is_adopted == True).all()
+        return dogs
 
 
 
