@@ -1,16 +1,20 @@
-from os import wait
+from os import pread, wait
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
-from requests import sessions
+from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 from db.deps import get_dep
 from component.crud import crud
 from component.Dog.dog_schema import DogCreate, DogUpdate
+from component.User.user_schema import UserCreate, UserResponse, Token
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import (OAuth2PasswordBearer, OAuth2PasswordRequestForm)
 from services.req_api import req_picture
+from core.auth import check_username_password, hash_password
 from fastapi import HTTPException
+from core.auth import create_access_token
 app = FastAPI()
 
 origins = [
@@ -29,9 +33,14 @@ app.add_middleware(
 )
 
 
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/token",
+)
+
 @app.post('/dog/{name}', status_code=200)
 async def add_dog(
-    name:str, db:Session = Depends(get_dep)
+    name:str, db:Session = Depends(get_dep),
+    token: str = Depends(oauth2_scheme)
     ):
     if name.isdigit():
         raise HTTPException(status_code=405, 
@@ -44,10 +53,6 @@ async def add_dog(
         raise HTTPException(status_code=503, 
                                 detail='503 Service unavailable')
 
-    print("dasdasd")
-
-    print(a)
-    print("dasdasd")
     dogpost = crud.create(db, a)
     return JSONResponse("Done")
 
@@ -92,8 +97,42 @@ def delete_dog(
     crud.deleteDog(db, name)
     return JSONResponse({"Done": "Done"})
 
+@app.post("/api/user/")
+def create_user(
+    data:UserCreate, db:Session = Depends(get_dep)
+    ):
+    data.password = hash_password(data.password)
+    user = crud.create_user(db, jsonable_encoder(data))
+    return JSONResponse("Done")
 
-
+@app.get('/api/user/{email}', status_code=200, response_model=UserResponse)
+def get_user(
+    email:EmailStr, db:Session = Depends(get_dep)
+    ):
+    user = crud.get_user(db, email)
+    user = jsonable_encoder(user)
+    return user
+    
+@app.post("/token", status_code=200, response_model=Token)
+async def route_login_access_token(
+    db:Session = Depends(get_dep),
+    form_data: OAuth2PasswordRequestForm = Depends()
+    ):
+    db_user = crud.get_user(db= db, email=jsonable_encoder(form_data.username))
+    if db_user is None:
+        raise HTTPException(status_code=400, detail="Username not existed")
+    valic = check_username_password(form_data.password, db_user.password)
+    if valic is False:
+        raise HTTPException(
+                status_code=401,
+                detail="Could not validate token credentials.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    access_token = create_access_token(
+        data={"sub": db_user.email},
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 if __name__=="__main__":
