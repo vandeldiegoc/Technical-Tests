@@ -8,6 +8,7 @@ class DogCreate(BaseModel):
     picture: str
     is_adopted: bool = False
     create_date: datetime = datetime.utcnow()
+    id_user: int
 
 
 class DogResponse(BaseModel):
